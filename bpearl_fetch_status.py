@@ -15,7 +15,7 @@ while True:
         
         if receive_data[:8]==b'\xA5\xFF\x00\x5A\x11\x11\x55\x55':
             MOT_SPD = receive_data[8:8+2]
-            ETH = receive_data[10:10:22]
+            ETH = receive_data[10:10+22]
             FOV_SET = receive_data[32:32+4]
             MOT_PHASE = receive_data[38:38+2]
             TOP_FRM = receive_data[40:40+5]
@@ -27,7 +27,7 @@ while True:
             UTC_TIME = receive_data[303:303+10]
             STATUS = receive_data[313:313+18]
             FALT_DIGS = receive_data[342:342+40]
-            GPRMC = receive_data[382:382+86]                                   
+            GPRMC = receive_data[382:382+86]
             COR_VERT_ANG = receive_data[468:468+96]
             COR_HOR_ANG = receive_data[564:564+96]
 
@@ -45,7 +45,7 @@ while True:
             fov_end = int.from_bytes(FOV_SET[2:4], byteorder='big', signed=False)/100
             motor_phase = int.from_bytes(MOT_PHASE, byteorder='big', signed=False)
 
-            motor_speed_realtime = int.from_bytes(FALT_DIGS[32:34], byteorder='big', signed=False)/6
+            motor_speed_realtime = int.from_bytes(FALT_DIGS[31:33], byteorder='big', signed=False)/6
             
             print("Top Board Firmware Version: "+TOP_FRM.hex()+"  Bottom Board Firmware Version: "+BOT_FRM.hex())
             print("Serial Number: "+SN.hex())
@@ -63,7 +63,7 @@ while True:
             print()
 
             print("Motor Speed Realtime: "+str(motor_speed_realtime)+" rpm")
-            print("Return Mode: "+["Dual", "Strongest", "Last"][ReturnMode_btye])
+            print("Return Mode: "+["Dual", "Strongest", "Last"][int.from_bytes(ReturnMode_btye, byteorder='big', signed=False)])
             print()
 
             print("Time: 20"+str(UTC_TIME[0])+"-"+str(UTC_TIME[1])+"-"+str(UTC_TIME[2])+" "+str(UTC_TIME[3])+":"+str(UTC_TIME[4])+":"+str(UTC_TIME[5])+"."+str(UTC_TIME[6])+str(UTC_TIME[7]))
@@ -75,5 +75,5 @@ while True:
         else:
             print("Received UDP packets with wrong header. Check your ip address and port number.")
 
-    except udp_socket.timeout:
+    except TimeoutError:
         print("Received no packet on "+ip_addr+":"+port+" in last 5 secs")
